@@ -1,0 +1,16 @@
+{
+  "name": "muzammil/woocommerce-license-manager",
+  "version": "1.0.1",
+  "autoload": {
+    "psr-4": {
+      "WCLM\\": "includes/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Muzammil Hussain",
+      "email": "smhz101@gmail.com"
+    }
+  ],
+  "require": {}
+}

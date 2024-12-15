@@ -1,0 +1,117 @@
+{
+  // Editor Font and Size
+  "editor.fontFamily": "'JetBrains Mono', 'Courier New', monospace",
+  "editor.fontSize": 12,
+  "editor.lineHeight": 18,
+  "editor.fontLigatures": true,
+
+  // Zoom the Entire UI
+  "window.zoomLevel": 1,
+
+  // Editor Settings
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "editor.tabSize": 4, // WordPress recommends 4 spaces for PHP
+  "editor.insertSpaces": true,
+  "files.eol": "\n",
+  "files.autoSave": "onFocusChange",
+
+  // PHP and WordPress Development
+  "php.validate.executablePath": "/usr/local/bin/php", // Update this path based on your system
+  "php.suggest.basic": true,
+  "php.validate.run": "onType",
+  "intelephense.environment.includePaths": [
+    "./wp-content", // Include plugins and themes
+    "./wp-includes", // Include WordPress core files
+    "./wp-admin" // Include WordPress admin files
+  ],
+
+  // Path to globally installed PHPCS executable
+  "phpSniffer.executablePath": "/Users/muzammil/.composer/vendor/bin/phpcs",
+
+  // Automatically detect the standard, but fallback to "WordPress"
+  "phpSniffer.autoDetect": false,
+  "phpSniffer.standard": "WordPress",
+
+  // When to run PHPCS (e.g., on save)
+  "phpSniffer.run": "onSave",
+
+  // Prettier for JS/CSS/HTML
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.singleQuote": true,
+  "prettier.tabWidth": 4,
+
+  // ESLint
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // IntelliSense and Auto Imports
+  "typescript.suggest.autoImports": true,
+  "javascript.suggest.autoImports": true,
+
+  // GitLens Configuration
+  "gitlens.currentLine.enabled": true,
+  "gitlens.hovers.enabled": true,
+
+  // Live Server
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.port": 5500,
+
+  // Editor Theme
+  "workbench.colorTheme": "One Dark Pro",
+  "workbench.iconTheme": "material-icon-theme",
+
+  // Exclude Node Modules and Cache
+  "files.exclude": {
+    "**/.vscode": false,
+    "**/__pycache__": true,
+    "**/*.log": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/builds": true,
+    "**/bin": true,
+    "**/languages": true,
+    "**/tests": true,
+    "**/wpa-license-manager": true,
+    "**/wpa-socketio-service": true,
+    "**/.babelrc": true,
+    "**/.distignore": true,
+    "**/.dockerignore": true,
+    "**/.phpunit.result.cache": true,
+    "**/Dockerfile": true
+  },
+
+  // Extensions Recommendations
+  "extensions.ignoreRecommendations": false,
+
+  "breadcrumbs.enabled": true,
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "driver": "MySQL",
+      "name": "WPA",
+      "group": "Local",
+      "database": "wpa",
+      "username": "root",
+      "password": "1234"
+    }
+  ],
+}
