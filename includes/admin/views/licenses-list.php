@@ -4,27 +4,30 @@ if ( ! class_exists( 'WCLM_License_List_Table' ) ) {
 	include_once WCLM_PLUGIN_DIR . 'includes/admin/class-wclm-license-list-table.php';
 }
 
-$license_list_table = new WCLM_License_List_Table();
-$license_list_table->prepare_items();
+$wclm_license_list_table = new WCLM_License_List_Table();
+$wclm_license_list_table->prepare_items();
 
 ?>
 <div class="wrap">
-	<h1><?php _e( 'Licenses', 'woocommerce-license-manager' ); ?></h1>
-	<?php $license_list_table->display_add_license_form(); ?>
+	<h1 class="wp-heading-inline"><?php _e( 'Licenses', 'woocommerce-license-manager' ); ?></h1>
+	<a href="<?php echo admin_url( 'admin.php?page=wclm_add_new_license' ); ?>" class="page-title-action">Add New License</a>
+	
+	<hr class="wp-header-end">
+	<h2 class="screen-reader-text">Filter pages list</h2>
 
 	<form method="post">
 		<?php
 
 		// Display notices.
-		$license_list_table->display_notices();
+		$wclm_license_list_table->display_notices();
 
 		// Display subsubsub filters.
-		$license_list_table->views();
+		$wclm_license_list_table->views();
 
 		// Display search form.
-		$license_list_table->search_box( __( 'Search Licenses', 'woocommerce-license-manager' ), 'license_search' );
+		$wclm_license_list_table->search_box( __( 'Search Licenses', 'woocommerce-license-manager' ), 'license_search' );
 
-		$license_list_table->display();
+		$wclm_license_list_table->display();
 		?>
 	</form>
 </div>

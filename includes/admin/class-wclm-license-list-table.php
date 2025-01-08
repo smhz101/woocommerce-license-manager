@@ -4,11 +4,35 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
+/**
+ * Class WCLM_License_List_Table
+ *
+ * This class extends the WP_List_Table to manage and display a list of licenses
+ * for the WooCommerce License Manager plugin. It provides functionalities to
+ * view, edit, renew, revoke, and notify clients about licenses.
+ */
 class WCLM_License_List_Table extends WP_List_Table {
 
+	/**
+	 * API client for interacting with the license management API.
+	 *
+	 * @var String
+	 */
 	private $api_client;
+
+	/**
+	 * Array to store notices for user feedback.
+	 *
+	 * @var Array
+	 */
 	private $notices = array();
 
+	/**
+	 * Constructor for the WCLM_License_List_Table class.
+	 *
+	 * Initializes the list table with columns and sets up the API client
+	 * using credentials from the plugin settings. It also processes any bulk actions.
+	 */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -29,6 +53,11 @@ class WCLM_License_List_Table extends WP_List_Table {
 		$this->process_bulk_action();
 	}
 
+	/**
+	 * Retrieves the columns for the list table.
+	 *
+	 * @return array An associative array of column names and their labels.
+	 */
 	public function get_columns() {
 		$columns = array(
 			'cb'         => '<input type="checkbox" />',
@@ -40,10 +69,21 @@ class WCLM_License_List_Table extends WP_List_Table {
 		return $columns;
 	}
 
+	/**
+	 * Retrieves the primary column name for sorting.
+	 *
+	 * @return string The primary column name.
+	 */
 	protected function get_primary_column_name() {
 		return 'licenseKey';
 	}
 
+	/**
+	 * Renders the checkbox column for each item.
+	 *
+	 * @param array $item The current item data.
+	 * @return string The HTML for the checkbox.
+	 */
 	public function column_cb( $item ) {
 		return sprintf(
 			'<input type="checkbox" name="license[]" value="%s" />',
@@ -51,6 +91,11 @@ class WCLM_License_List_Table extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Retrieves the bulk actions available for the list table.
+	 *
+	 * @return array An associative array of bulk action names and their labels.
+	 */
 	public function get_bulk_actions() {
 		$actions = array(
 			'renew'  => __( 'Renew', 'woocommerce-license-manager' ),
@@ -59,6 +104,11 @@ class WCLM_License_List_Table extends WP_List_Table {
 		return $actions;
 	}
 
+	/**
+	 * Retrieves the views for filtering the list table.
+	 *
+	 * @return array An associative array of view names and their HTML links.
+	 */
 	public function get_views() {
 		$status_counts  = $this->get_status_counts();
 		$current_status = isset( $_REQUEST['status'] ) ? sanitize_text_field( $_REQUEST['status'] ) : 'all';
@@ -75,7 +125,7 @@ class WCLM_License_List_Table extends WP_List_Table {
 		foreach ( $status_counts as $status => $count ) {
 			$class = ( $current_status === $status ) ? 'current' : '';
 
-			if ( $status === 'all' ) {
+			if ( 'all' === $status ) {
 				$url = esc_url( remove_query_arg( 'status' ) );
 			} else {
 				$url = esc_url( add_query_arg( 'status', $status ) );
@@ -95,10 +145,15 @@ class WCLM_License_List_Table extends WP_List_Table {
 		return $views;
 	}
 
+	/**
+	 * Retrieves the counts of licenses by status.
+	 *
+	 * @return array An associative array of status counts.
+	 */
 	private function get_status_counts() {
 		$counts = array();
 
-		// Fetch all licenses from API,
+		// Fetch all licenses from API.
 		$licenses = $this->api_client->get_all_licenses();
 
 		if ( isset( $licenses['licenses'] ) ) {
@@ -124,6 +179,14 @@ class WCLM_License_List_Table extends WP_List_Table {
 		return $counts;
 	}
 
+	/**
+	 * Prepares the items for display in the list table.
+	 *
+	 * This method fetches licenses from the API, applies filtering, sorting,
+	 * and pagination to prepare the data for display.
+	 *
+	 * @return void
+	 */
 	public function prepare_items() {
 		$per_page     = 20; // Set the number of items per page.
 		$current_page = $this->get_pagenum();
@@ -140,8 +203,8 @@ class WCLM_License_List_Table extends WP_List_Table {
 			foreach ( $licenses['licenses'] as $license ) {
 				$license_status = strtolower( $license['status'] );
 
-				// Apply status filter
-				if ( $current_status === 'all' || $current_status === $license_status ) {
+				// Apply status filter.
+				if ( 'all' === $current_status || $current_status === $license_status ) {
 					$data[] = array(
 						'licenseKey' => $license['licenseKey'],
 						'clientName' => isset( $license['client']['name'] ) ? $license['client']['name'] : '',
@@ -182,7 +245,7 @@ class WCLM_License_List_Table extends WP_List_Table {
 			$data,
 			function ( $a, $b ) use ( $orderby, $order ) {
 				$result = strcmp( $a[ $orderby ], $b[ $orderby ] );
-				return ( $order === 'asc' ) ? $result : -$result;
+				return ( 'asc' === $order ) ? $result : -$result;
 			}
 		);
 
@@ -208,6 +271,11 @@ class WCLM_License_List_Table extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Retrieves the sortable columns for the list table.
+	 *
+	 * @return array An associative array of sortable column names and their sort settings.
+	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
 			'licenseKey' => array( 'licenseKey', false ),
@@ -218,12 +286,25 @@ class WCLM_License_List_Table extends WP_List_Table {
 		return $sortable_columns;
 	}
 
+	/**
+	 * Displays a message when no items are found in the list table.
+	 *
+	 * @return void
+	 */
 	public function no_items() {
 		_e( 'No licenses found.', 'woocommerce-license-manager' );
 	}
 
+	/**
+	 * Processes bulk actions for the list table.
+	 *
+	 * This method handles both bulk and single actions for licenses,
+	 * such as renewing, revoking, notifying, viewing, and editing licenses.
+	 *
+	 * @return void
+	 */
 	public function process_bulk_action() {
-		// Handle bulk actions
+		// Handle bulk actions.
 		if ( ( isset( $_POST['action'] ) && $_POST['action'] != -1 ) || ( isset( $_POST['action2'] ) && $_POST['action2'] != -1 ) ) {
 			$action      = $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
 			$license_ids = isset( $_POST['license'] ) ? array_map( 'intval', $_POST['license'] ) : array();
@@ -267,6 +348,13 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Adds a notice to be displayed to the user.
+	 *
+	 * @param string $message The message to display.
+	 * @param string $type    The type of notice (success or error).
+	 * @return void
+	 */
 	private function add_notice( $message, $type = 'success' ) {
 		$this->notices[] = array(
 			'message' => $message,
@@ -274,6 +362,13 @@ class WCLM_License_List_Table extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Displays notices to the user.
+	 *
+	 * This method iterates through the notices array and outputs each notice.
+	 *
+	 * @return void
+	 */
 	public function display_notices() {
 		foreach ( $this->notices as $notice ) {
 			printf(
@@ -284,6 +379,12 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Renews a license by extending its expiration date.
+	 *
+	 * @param int $license_id The ID of the license to renew.
+	 * @return void
+	 */
 	private function renew_license( $license_id ) {
 		// Fetch the license.
 		$license = $this->api_client->request( 'GET', '/api/licenses/' . intval( $license_id ) );
@@ -309,6 +410,12 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Revokes a license by changing its status to revoked.
+	 *
+	 * @param int $license_id The ID of the license to revoke.
+	 * @return void
+	 */
 	private function revoke_license( $license_id ) {
 		$data = array(
 			'status' => 'revoked',
@@ -324,19 +431,25 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Notifies the client associated with a license via email.
+	 *
+	 * @param int $license_id The ID of the license to notify.
+	 * @return void
+	 */
 	private function notify_client( $license_id ) {
-		// Fetch the license
+		// Fetch the license.
 		$license = $this->api_client->request( 'GET', '/api/licenses/' . intval( $license_id ) );
 		if ( isset( $license['license'] ) ) {
 			$client_email = isset( $license['license']['client']['contact_email'] ) ? $license['license']['client']['contact_email'] : '';
 
 			if ( $client_email ) {
-				// Prepare email content
+				// Prepare email content.
 				$subject = __( 'License Notification', 'woocommerce-license-manager' );
 				$message = sprintf( __( 'Dear customer, your license %s has an update.', 'woocommerce-license-manager' ), $license['license']['licenseKey'] );
 				$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
-				// Send email
+				// Send email.
 				wp_mail( $client_email, $subject, $message, $headers );
 
 				$this->add_notice( __( 'Client notified successfully.', 'woocommerce-license-manager' ) );
@@ -348,15 +461,21 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Displays the details of a specific license.
+	 *
+	 * @param int $license_id The ID of the license to view.
+	 * @return void
+	 */
 	private function view_license( $license_id ) {
-		// Fetch the license
+		// Fetch the license.
 		$license = $this->api_client->request( 'GET', '/api/licenses/' . intval( $license_id ) );
 				echo '<pre>';
 				var_export( $license );
 				echo '</pre>';
 
 		if ( isset( $license['license'] ) ) {
-			// Display license details
+			// Display license details.
 			echo '<div class="wrap">';
 			echo '<h1>' . __( 'View License', 'woocommerce-license-manager' ) . '</h1>';
 			echo '<table class="form-table">';
@@ -365,7 +484,7 @@ class WCLM_License_List_Table extends WP_List_Table {
 			echo '<tr><th>' . __( 'Client Email', 'woocommerce-license-manager' ) . '</th><td>' . esc_html( $license['license']['client']['contact_email'] ) . '</td></tr>';
 			echo '<tr><th>' . __( 'Status', 'woocommerce-license-manager' ) . '</th><td>' . esc_html( ucfirst( $license['license']['status'] ) ) . '</td></tr>';
 			echo '<tr><th>' . __( 'Expires At', 'woocommerce-license-manager' ) . '</th><td>' . esc_html( date( 'Y-m-d', strtotime( $license['license']['expiresAt'] ) ) ) . '</td></tr>';
-			// Add more fields as needed
+			// Add more fields as needed.
 			echo '</table>';
 			echo '<a href="' . admin_url( 'admin.php?page=' . $_REQUEST['page'] ) . '" class="button">' . __( 'Back to Licenses', 'woocommerce-license-manager' ) . '</a>';
 			echo '</div>';
@@ -375,8 +494,14 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Edits a specific license's details.
+	 *
+	 * @param int $license_id The ID of the license to edit.
+	 * @return void
+	 */
 	private function edit_license( $license_id ) {
-		// Check if the form is submitted
+		// Check if the form is submitted.
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'wclm_edit_license' ) ) {
 			$status     = sanitize_text_field( $_POST['status'] );
 			$expires_at = sanitize_text_field( $_POST['expiresAt'] );
@@ -396,10 +521,10 @@ class WCLM_License_List_Table extends WP_List_Table {
 			}
 		}
 
-		// Fetch the license
+		// Fetch the license.
 		$license = $this->api_client->request( 'GET', '/api/licenses/' . intval( $license_id ) );
 		if ( isset( $license['license'] ) ) {
-			// Display edit form
+			// Display edit form.
 			echo '<div class="wrap">';
 			echo '<h1>' . __( 'Edit License', 'woocommerce-license-manager' ) . '</h1>';
 			echo '<form method="post">';
@@ -420,7 +545,8 @@ class WCLM_License_List_Table extends WP_List_Table {
 			echo '</select></td></tr>';
 			echo '<tr><th><label for="expiresAt">' . __( 'Expires At', 'woocommerce-license-manager' ) . '</label></th><td>';
 			echo '<input type="date" name="expiresAt" id="expiresAt" value="' . esc_attr( date( 'Y-m-d', strtotime( $license['license']['expiresAt'] ) ) ) . '" /></td></tr>';
-			// Add more fields as needed
+			
+			// Add more fields as needed.
 			echo '</table>';
 			submit_button( __( 'Update License', 'woocommerce-license-manager' ) );
 			echo '</form>';
@@ -432,6 +558,12 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Renders the license key column with action links.
+	 *
+	 * @param array $item The current item data.
+	 * @return string The HTML for the license key column with action links.
+	 */
 	public function column_licenseKey( $item ) {
 		$actions = array(
 			'view'   => sprintf(
@@ -457,6 +589,13 @@ class WCLM_License_List_Table extends WP_List_Table {
 		return sprintf( '%1$s %2$s', $item['licenseKey'], $this->row_actions( $actions ) );
 	}
 
+	/**
+	 * Renders the default column values for the list table.
+	 *
+	 * @param array  $item       The current item data.
+	 * @param string $column_name The name of the column to render.
+	 * @return string The value to display in the column.
+	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'clientName':
@@ -468,6 +607,14 @@ class WCLM_License_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Displays the form for adding a new license.
+	 *
+	 * This method handles the form submission and displays the necessary fields
+	 * for creating a new license.
+	 *
+	 * @return void
+	 */
 	public function display_add_license_form() {
 		echo '<div class="wrap">';
 		echo '<h1>' . __( 'Add New License', 'woocommerce-license-manager' ) . '</h1>';
