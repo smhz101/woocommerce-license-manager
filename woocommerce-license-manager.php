@@ -72,7 +72,9 @@ function wclm_check_license_expirations() {
 	}
 }
 
-// Schedule the daily license check on activation.
+/**
+ * Schedule the daily license check on activation.
+ */
 function wclm_schedule_daily_license_check() {
 	if ( ! wp_next_scheduled( 'wclm_daily_license_check' ) ) {
 		wp_schedule_event( time(), 'daily', 'wclm_daily_license_check' );
@@ -98,7 +100,9 @@ add_action( 'plugins_loaded', 'wclm_init' );
 // Hook the scheduling function to activation.
 register_activation_hook( __FILE__, 'wclm_schedule_daily_license_check' );
 
-// Hook the unscheduling function to deactivation.
+/**
+ * Hook the unscheduling function to deactivation.
+ */
 function wclm_unschedule_daily_license_check() {
 	wp_clear_scheduled_hook( 'wclm_daily_license_check' );
 }
